@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منشئ السيرة الذاتية | Resume Builder</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ===== FORM SECTION ===== */
+        .form-section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .form-header h1 {
+            color: #667eea;
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        .form-header p {
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: #444;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            margin-top: 10px;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(17, 153, 142, 0.4);
+        }
+
+        .dynamic-section {
+            background: #f8f9ff;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 2px dashed #667eea;
+        }
+
+        .dynamic-section h3 {
+            color: #667eea;
+            font-size: 1rem;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .add-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .add-btn:hover {
+            background: #764ba2;
+        }
+
+        .item-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .item-row input {
+            padding: 8px 12px;
+            font-size: 0.85rem;
+        }
+
+        .remove-btn {
+            position: absolute;
+            left: -30px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #ff4757;
+            color: white;
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ===== PREVIEW SECTION ===== */
+        .preview-section {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .preview-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .preview-header h2 {
+            color: #444;
+            font-size: 1.3rem;
+        }
+
+        /* ===== RESUME TEMPLATE ===== */
+        #resume-preview {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        @media (max-width: 1024px) {
+            #resume-preview {
+                width: 100%;
+                min-height: auto;
+            }
+        }
+
+        .resume {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            min-height: 297mm;
+        }
+
+        @media (max-width: 768px) {
+            .resume {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Sidebar */
+        .resume-sidebar {
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            padding: 40px 25px;
+        }
+
+        .profile-img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 4px solid #667eea;
+            margin: 0 auto 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #667eea;
+            font-size: 3rem;
+            overflow: hidden;
+        }
+
+        .profile-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .sidebar-section {
+            margin-bottom: 30px;
+        }
+
+        .sidebar-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            font-size: 0.85rem;
+            word-break: break-all;
+        }
+
+        .contact-icon {
+            width: 30px;
+            height: 30px;
+            background: rgba(102, 126, 234, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            flex-shrink: 0;
+        }
+
+        .skill-item {
+            margin-bottom: 15px;
+        }
+
+        .skill-name {
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+        }
+
+        .skill-bar {
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .skill-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 3px;
+            transition: width 0.5s;
+        }
+
+        .lang-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.85rem;
+        }
+
+        .lang-level {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        /* Main Content */
+        .resume-main {
+            padding: 50px 40px;
+            background: white;
+        }
+
+        .name-section {
+            margin-bottom: 30px;
+        }
+
+        .name-section h1 {
+            font-size: 2.5rem;
+            color: #1a1a2e;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+
+        .name-section h2 {
+            font-size: 1.2rem;
+            color: #667eea;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+
+        .main-section {
+            margin-bottom: 35px;
+        }
+
+        .main-title {
+            font-size: 1.3rem;
+            color: #1a1a2e;
+            font-weight: 700;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .main-title::before {
+            content: '';
+            width: 8px;
+            height: 25px;
+            background: linear-gradient(180deg, #667eea, #764ba2);
+            border-radius: 4px;
+        }
+
+        .exp-item, .edu-item {
+            margin-bottom: 25px;
+            position: relative;
+            padding-right: 20px;
+            border-right: 2px solid #e0e0e0;
+        }
+
+        .exp-item::before, .edu-item::before {
+            content: '';
+            position: absolute;
+            right: -6px;
+            top: 5px;
+            width: 10px;
+            height: 10px;
+            background: #667eea;
+            border-radius: 50%;
+        }
+
+        .exp-header, .edu-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 8px;
+        }
+
+        .exp-title, .edu-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1a1a2e;
+        }
+
+        .exp-company, .edu-school {
+            font-size: 0.95rem;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .exp-date, .edu-date {
+            font-size: 0.8rem;
+            color: #888;
+            background: #f0f0f0;
+            padding: 3px 10px;
+            border-radius: 15px;
+            white-space: nowrap;
+        }
+
+        .exp-desc, .edu-desc {
+            font-size: 0.9rem;
+            color: #555;
+            line-height: 1.7;
+        }
+
+        .summary-text {
+            font-size: 0.95rem;
+            color: #555;
+            line-height: 1.8;
+            text-align: justify;
+        }
+
+        /* Print Styles */
+        @media print {
+            body { background: white; padding: 0; }
+            .form-section, .preview-section { display: none; }
+            #resume-preview { box-shadow: none; }
+        }
+
+        .watermark {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            font-size: 0.7rem;
+            color: #ccc;
+            z-index: 1000;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- FORM SECTION -->
+    <div class="form-section">
+        <div class="form-header">
+            <h1>📝 منشئ السيرة الذاتية</h1>
+            <p>أدخل بياناتك وشاهد النتيجة فوراً</p>
+        </div>
+
+        <!-- Personal Info -->
+        <div class="form-group">
+            <label>الاسم الكامل</label>
+            <input type="text" id="fullName" placeholder="مثال: أحمد محمد علي" oninput="updateResume()">
+        </div>
+
+        <div class="form-group">
+            <label>المسمى الوظيفي</label>
+            <input type="text" id="jobTitle" placeholder="مثال: مطور واجهات أمامية" oninput="updateResume()">
+        </div>
+
+        <div class="form-group">
+            <label>نبذة شخصية</label>
+            <textarea id="summary" placeholder="اكتب نبذة قصيرة عنك..." oninput="updateResume()"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>البريد الإلكتروني</label>
+            <input type="email" id="email" placeholder="example@email.com" oninput="updateResume()">
+        </div>
+
+        <div class="form-group">
+            <label>رقم الهاتف</label>
+            <input type="tel" id="phone" placeholder="+966 50 123 4567" oninput="updateResume()">
+        </div>
+
+        <div class="form-group">
+            <label>الموقع الإلكتروني / LinkedIn</label>
+            <input type="text" id="website" placeholder="linkedin.com/in/username" oninput="updateResume()">
+        </div>
+
+        <div class="form-group">
+            <label>المدينة / الدولة</label>
+            <input type="text" id="location" placeholder="الرياض، المملكة العربية السعودية" oninput="updateResume()">
+        </div>
+
+        <!-- Skills -->
+        <div class="dynamic-section">
+            <h3>💡 المهارات <button class="add-btn" onclick="addSkill()">+ إضافة</button></h3>
+            <div id="skillsContainer"></div>
+        </div>
+
+        <!-- Languages -->
+        <div class="dynamic-section">
+            <h3>🌐 اللغات <button class="add-btn" onclick="addLanguage()">+ إضافة</button></h3>
+            <div id="languagesContainer"></div>
+        </div>
+
+        <!-- Experience -->
+        <div class="dynamic-section">
+            <h3>💼 الخبرات العملية <button class="add-btn" onclick="addExperience()">+ إضافة</button></h3>
+            <div id="experienceContainer"></div>
+        </div>
+
+        <!-- Education -->
+        <div class="dynamic-section">
+            <h3>🎓 التعليم <button class="add-btn" onclick="addEducation()">+ إضافة</button></h3>
+            <div id="educationContainer"></div>
+        </div>
+
+        <button class="btn btn-success" onclick="downloadPDF()">📥 تحميل السيرة الذاتية (PDF)</button>
+        <div class="loading" id="loading">جاري إنشاء PDF...</div>
+    </div>
+
+    <!-- PREVIEW SECTION -->
+    <div class="preview-section">
+        <div class="preview-header">
+            <h2>👁️ المعاينة المباشرة</h2>
+        </div>
+        <div id="resume-preview">
+            <!-- Resume will be rendered here -->
+        </div>
+    </div>
+</div>
+
+<script>
+// ===== INITIAL DATA =====
+let skills = [];
+let languages = [];
+let experiences = [];
+let educations = [];
+
+// ===== ADD FUNCTIONS =====
+function addSkill() {
+    skills.push({ name: '', level: 80 });
+    renderSkills();
+    updateResume();
+}
+
+function addLanguage() {
+    languages.push({ name: '', level: 'متوسط' });
+    renderLanguages();
+    updateResume();
+}
+
+function addExperience() {
+    experiences.push({ title: '', company: '', date: '', desc: '' });
+    renderExperiences();
+    updateResume();
+}
+
+function addEducation() {
+    educations.push({ degree: '', school: '', date: '', desc: '' });
+    renderEducations();
+    updateResume();
+}
+
+// ===== RENDER FORM FIELDS =====
+function renderSkills() {
+    const container = document.getElementById('skillsContainer');
+    container.innerHTML = skills.map((skill, i) => `
+        <div class="item-row">
+            <input type="text" placeholder="المهارة" value="${skill.name}" onchange="skills[${i}].name=this.value; updateResume()">
+            <input type="range" min="20" max="100" value="${skill.level}" onchange="skills[${i}].level=this.value; updateResume()">
+            ${skills.length > 1 ? `<button class="remove-btn" onclick="skills.splice(${i},1); renderSkills(); updateResume()">×</button>` : ''}
+        </div>
+    `).join('');
+}
+
+function renderLanguages() {
+    const container = document.getElementById('languagesContainer');
+    container.innerHTML = languages.map((lang, i) => `
+        <div class="item-row">
+            <input type="text" placeholder="اللغة" value="${lang.name}" onchange="languages[${i}].name=this.value; updateResume()">
+            <select onchange="languages[${i}].level=this.value; updateResume()" style="padding:8px;border-radius:8px;border:2px solid #e0e0e0;font-family:'Cairo'">
+                <option value="مبتدئ" ${lang.level === 'مبتدئ' ? 'selected' : ''}>مبتدئ</option>
+                <option value="متوسط" ${lang.level === 'متوسط' ? 'selected' : ''}>متوسط</option>
+                <option value="متقدم" ${lang.level === 'متقدم' ? 'selected' : ''}>متقدم</option>
+                <option value="طلاقة" ${lang.level === 'طلاقة' ? 'selected' : ''}>طلاقة</option>
+            </select>
+            ${languages.length > 1 ? `<button class="remove-btn" onclick="languages.splice(${i},1); renderLanguages(); updateResume()">×</button>` : ''}
+        </div>
+    `).join('');
+}
+
+function renderExperiences() {
+    const container = document.getElementById('experienceContainer');
+    container.innerHTML = experiences.map((exp, i) => `
+        <div style="margin-bottom:15px;padding:10px;background:white;border-radius:8px;">
+            <div class="item-row">
+                <input type="text" placeholder="المسمى الوظيفي" value="${exp.title}" onchange="experiences[${i}].title=this.value; updateResume()">
+                <input type="text" placeholder="الشركة" value="${exp.company}" onchange="experiences[${i}].company=this.value; updateResume()">
+            </div>
+            <div class="item-row">
+                <input type="text" placeholder="الفترة (مثال: 2020 - 2023)" value="${exp.date}" onchange="experiences[${i}].date=this.value; updateResume()">
+                <input type="text" placeholder="الوصف" value="${exp.desc}" onchange="experiences[${i}].desc=this.value; updateResume()">
+            </div>
+            ${experiences.length > 1 ? `<button class="remove-btn" style="position:static;transform:none;margin-top:5px;" onclick="experiences.splice(${i},1); renderExperiences(); updateResume()">× حذف</button>` : ''}
+        </div>
+    `).join('');
+}
+
+function renderEducations() {
+    const container = document.getElementById('educationContainer');
+    container.innerHTML = educations.map((edu, i) => `
+        <div style="margin-bottom:15px;padding:10px;background:white;border-radius:8px;">
+            <div class="item-row">
+                <input type="text" placeholder="الشهادة" value="${edu.degree}" onchange="educations[${i}].degree=this.value; updateResume()">
+                <input type="text" placeholder="الجامعة / المدرسة" value="${edu.school}" onchange="educations[${i}].school=this.value; updateResume()">
+            </div>
+            <div class="item-row">
+                <input type="text" placeholder="الفترة" value="${edu.date}" onchange="educations[${i}].date=this.value; updateResume()">
+                <input type="text" placeholder="الوصف" value="${edu.desc}" onchange="educations[${i}].desc=this.value; updateResume()">
+            </div>
+            ${educations.length > 1 ? `<button class="remove-btn" style="position:static;transform:none;margin-top:5px;" onclick="educations.splice(${i},1); renderEducations(); updateResume()">× حذف</button>` : ''}
+        </div>
+    `).join('');
+}
+
+// ===== UPDATE RESUME PREVIEW =====
+function updateResume() {
+    const name = document.getElementById('fullName').value || 'الاسم الكامل';
+    const title = document.getElementById('jobTitle').value || 'المسمى الوظيفي';
+    const summary = document.getElementById('summary').value || 'اكتب نبذة شخصية مختصرة عن خبراتك ومهاراتك...';
+    const email = document.getElementById('email').value;
+    const phone = document.getElementById('phone').value;
+    const website = document.getElementById('website').value;
+    const location = document.getElementById('location').value;
+
+    const firstLetter = name.charAt(0).toUpperCase();
+
+    const skillsHTML = skills.filter(s => s.name).map(s => `
+        <div class="skill-item">
+            <div class="skill-name">${s.name}</div>
+            <div class="skill-bar"><div class="skill-fill" style="width:${s.level}%"></div></div>
+        </div>
+    `).join('');
+
+    const languagesHTML = languages.filter(l => l.name).map(l => `
+        <div class="lang-item">
+            <span>${l.name}</span>
+            <span class="lang-level">${l.level}</span>
+        </div>
+    `).join('');
+
+    const experienceHTML = experiences.filter(e => e.title).map(e => `
+        <div class="exp-item">
+            <div class="exp-header">
+                <div>
+                    <div class="exp-title">${e.title}</div>
+                    <div class="exp-company">${e.company}</div>
+                </div>
+                <div class="exp-date">${e.date}</div>
+            </div>
+            <div class="exp-desc">${e.desc}</div>
+        </div>
+    `).join('');
+
+    const educationHTML = educations.filter(e => e.degree).map(e => `
+        <div class="edu-item">
+            <div class="edu-header">
+                <div>
+                    <div class="edu-title">${e.degree}</div>
+                    <div class="edu-school">${e.school}</div>
+                </div>
+                <div class="edu-date">${e.date}</div>
+            </div>
+            <div class="edu-desc">${e.desc}</div>
+        </div>
+    `).join('');
+
+    const contactHTML = `
+        ${email ? `<div class="contact-item"><div class="contact-icon">✉</div>${email}</div>` : ''}
+        ${phone ? `<div class="contact-item"><div class="contact-icon">📞</div>${phone}</div>` : ''}
+        ${website ? `<div class="contact-item"><div class="contact-icon">🌐</div>${website}</div>` : ''}
+        ${location ? `<div class="contact-item"><div class="contact-icon">📍</div>${location}</div>` : ''}
+    `;
+
+    document.getElementById('resume-preview').innerHTML = `
+        <div class="resume" id="resume-content">
+            <div class="resume-sidebar">
+                <div class="profile-img">${firstLetter}</div>
+                
+                <div class="sidebar-section">
+                    <div class="sidebar-title">معلومات التواصل</div>
+                    ${contactHTML || '<div style="font-size:0.85rem;color:#aaa;">أدخل بيانات التواصل</div>'}
+                </div>
+
+                ${skillsHTML ? `
+                <div class="sidebar-section">
+                    <div class="sidebar-title">المهارات</div>
+                    ${skillsHTML}
+                </div>
+                ` : ''}
+
+                ${languagesHTML ? `
+                <div class="sidebar-section">
+                    <div class="sidebar-title">اللغات</div>
+                    ${languagesHTML}
+                </div>
+                ` : ''}
+            </div>
+
+            <div class="resume-main">
+                <div class="name-section">
+                    <h1>${name}</h1>
+                    <h2>${title}</h2>
+                </div>
+
+                <div class="main-section">
+                    <div class="main-title">نبذة شخصية</div>
+                    <div class="summary-text">${summary}</div>
+                </div>
+
+                ${experienceHTML ? `
+                <div class="main-section">
+                    <div class="main-title">الخبرات العملية</div>
+                    ${experienceHTML}
+                </div>
+                ` : ''}
+
+                ${educationHTML ? `
+                <div class="main-section">
+                    <div class="main-title">التعليم</div>
+                    ${educationHTML}
+                </div>
+                ` : ''}
+            </div>
+        </div>
+    `;
+}
+
+// ===== DOWNLOAD PDF =====
+function downloadPDF() {
+    const element = document.getElementById('resume-content');
+    if (!element) {
+        alert('الرجاء إدخال البيانات أولاً');
+        return;
+    }
+
+    document.getElementById('loading').style.display = 'block';
+
+    const opt = {
+        margin: 0,
+        filename: 'my-resume.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    html2pdf().set(opt).from(element).save().then(() => {
+        document.getElementById('loading').style.display = 'none';
+    }).catch(err => {
+        console.error(err);
+        document.getElementById('loading').style.display = 'none';
+        alert('حدث خطأ أثناء إنشاء PDF. حاول مرة أخرى.');
+    });
+}
+
+// ===== INITIALIZE =====
+window.onload = function() {
+    addSkill();
+    addLanguage();
+    addExperience();
+    addEducation();
+    updateResume();
+};
+</script>
+
+</body>
+</html>
